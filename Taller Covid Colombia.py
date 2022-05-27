@@ -20,7 +20,7 @@ data.drop('Código DIVIPOLA departamento', axis = 1, inplace=True)
 data.drop('Código DIVIPOLA municipio', axis = 1, inplace=True)
 data.drop('ID de caso', axis = 1, inplace=True)
 
-data['Recuperado'].value_counts()
+data['Sexo'].value_counts()
 
 data.loc[data['Estado'] == 'leve'] = 'Leve'
 data.loc[data['Estado'] == 'LEVE'] = 'Leve'
@@ -28,7 +28,8 @@ data.loc[data['Estado'] == 'LEVE'] = 'Leve'
 data.loc[data['Ubicación del caso'] == 'casa'] = 'Casa'
 data.loc[data['Ubicación del caso'] == 'CASA'] = 'Casa'
 
-
+data.loc[data['Sexo'] == 'm'] = 'M'
+data.loc[data['Sexo'] == 'f'] = 'F'
 
 #Número de casos de Contagiados en el País.
 data['Estado'].count()
@@ -58,7 +59,7 @@ data.sort_values(by=data.loc[(data['Tipo de contagio'] == 'Relacionado')],ascend
 data['Nombre departamento'].nunique()
 
 #Liste los departamentos afectados(sin repetirlos)
-data['Nombre departamento'].value_counts()
+data['Sexo'].value_counts()
 
 #Ordene de mayor a menor por tipo de atención
 data.sort_values(by='Tipo de recuperación',ascending=False )
@@ -89,9 +90,20 @@ aux = data[(data['Recuperado'] == 'Recuperado')].groupby('Nombre municipio').siz
 
 aux.sort_values(ascending=False).head(10)
 
+#Liste agrupado por departamento y en orden de Mayor a menor las ciudades con mas casos de contagiados
+aux = data.groupby(['Nombre departamento', 'Nombre municipio']).size()
 
+aux.sort_values(ascending=False)
 
+#Número de Mujeres y hombres contagiados por ciudad por departamento
+aux = data.groupby(['Nombre departamento', 'Nombre municipio', 'Sexo']).size()
 
+aux.sort_values(ascending=False)
+
+#Liste el promedio de edad de contagiados por hombre y mujeres por ciudad por departamento
+aux = data.groupby(['Nombre departamento', 'Nombre municipio', 'Edad']).size()
+
+aux.sort_values(ascending=False)
 
 
 
