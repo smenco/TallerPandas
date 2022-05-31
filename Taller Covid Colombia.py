@@ -20,7 +20,7 @@ data.drop('Código DIVIPOLA departamento', axis = 1, inplace=True)
 data.drop('Código DIVIPOLA municipio', axis = 1, inplace=True)
 data.drop('ID de caso', axis = 1, inplace=True)
 
-data['Sexo'].value_counts()
+aux = data['Recuperado'].value_counts()
 
 data.loc[data['Estado'] == 'leve'] = 'Leve'
 data.loc[data['Estado'] == 'LEVE'] = 'Leve'
@@ -30,6 +30,14 @@ data.loc[data['Ubicación del caso'] == 'CASA'] = 'Casa'
 
 data.loc[data['Sexo'] == 'm'] = 'M'
 data.loc[data['Sexo'] == 'f'] = 'F'
+
+data.loc[data['Edad'] == 'Casa'] = 36
+data.loc[data['Edad'] == 'Leve'] = 36
+data.loc[data['Edad'] == 'M'] = 36
+data.loc[data['Edad'] == 'F'] = 36
+
+
+data.mean()
 
 #Número de casos de Contagiados en el País.
 data['Estado'].count()
@@ -59,7 +67,10 @@ data.sort_values(by=data.loc[(data['Tipo de contagio'] == 'Relacionado')],ascend
 data['Nombre departamento'].nunique()
 
 #Liste los departamentos afectados(sin repetirlos)
-data['Sexo'].value_counts()
+data['Nombre departamento'].value_counts()
+
+data[data['Edad'] == '']
+
 
 #Ordene de mayor a menor por tipo de atención
 data.sort_values(by='Tipo de recuperación',ascending=False )
@@ -101,9 +112,56 @@ aux = data.groupby(['Nombre departamento', 'Nombre municipio', 'Sexo']).size()
 aux.sort_values(ascending=False)
 
 #Liste el promedio de edad de contagiados por hombre y mujeres por ciudad por departamento
-aux = data.groupby(['Nombre departamento', 'Nombre municipio', 'Edad']).size()
+data.groupby(['Nombre departamento', 'Nombre municipio', 'Sexo'])['Edad'].mean()
+
+#Liste de mayor a menor el número de contagiados por país de procedencia
+aux = data.groupby(['Nombre del país']).size()
 
 aux.sort_values(ascending=False)
 
+#Liste de mayor a menor las fechas donde se presentaron mas contagios
+aux = data.groupby(['Fecha de diagnóstico']).size()
 
+aux.sort_values(ascending=False)
 
+#Diga cual es la tasa de mortalidad y recuperación que tiene toda Colombia
+
+cantidad_muertes = data[data['Estado'] == 'Fallecido'].shape[0]
+cantidad_recuperados = data.query('Recuperado == "Recuperado"').shape[0]
+cantidad_casos = data.shape[0]
+
+tasa_mortalidad = cantidad_muertes / cantidad_casos * 100
+
+tasa_recuperacion = cantidad_recuperados / cantidad_casos * 100
+
+#Liste la tasa de mortalidad y recuperación que tiene cada departamento
+
+cantidad_muertes_dep = data[data['Estado'] == 'Fallecido'].groupby('Nombre departamento').size()
+cantidad_recuperados_dep = data[data['Recuperado'] == 'Recuperado'].groupby('Nombre departamento').size()
+cantidad_casos_dep = data.groupby('Nombre departamento').size()
+
+tasa_mortalidad_dep = cantidad_muertes_dep / cantidad_casos_dep * 100
+
+tasa_recuperacion_dep = cantidad_recuperados_dep / cantidad_casos_dep * 100
+
+data2 = pd.DataFrame({'tasa_mortalidad_dep': tasa_mortalidad_dep, 'tasa_recuperacion_dep':tasa_recuperacion_dep})
+
+#Liste la tasa de mortalidad y recuperación que tiene cada ciudad
+
+cantidad_muertes_ciu = data[data['Estado'] == 'Fallecido'].groupby('Nombre municipio').size()
+cantidad_recuperados_ciu = data[data['Recuperado'] == 'Recuperado'].groupby('Nombre municipio').size()
+cantidad_casos_ciu = data.groupby('Nombre municipio').size()
+
+tasa_mortalidad_ciu = cantidad_muertes_ciu / cantidad_casos_ciu * 100
+
+tasa_recuperacion_ciu = cantidad_recuperados_ciu / cantidad_casos_ciu * 100
+
+data3 = pd.DataFrame({'tasa_mortalidad_ciu': tasa_mortalidad_ciu, 'tasa_recuperacion_ciu':tasa_recuperacion_ciu})
+
+#Liste por cada ciudad la cantidad de personas por atención
+
+data.groupby(['Nombre municipio', 'Tipo de recuperación']).size()
+
+#Liste el promedio de edad por sexo por cada ciudad de contagiados
+
+data.groupby(['Nombre municipio', 'Sexo'])['Edad'].mean()
