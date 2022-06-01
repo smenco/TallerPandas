@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 url = 'Casos_positivos_de_COVID-19_en_Colombia.csv'
 data = pd.read_csv(url) 
 
-data.drop('Código ISO del país', axis = 1, inplace=True)
-data.drop('Nombre del país', axis = 1, inplace=True)
 data.drop('Pertenencia étnica', axis = 1, inplace=True)
 data.drop('Nombre del grupo étnico', axis = 1, inplace=True)
 data.drop('Fecha de inicio de síntomas', axis = 1, inplace=True)
@@ -20,21 +18,21 @@ data.drop('Código DIVIPOLA departamento', axis = 1, inplace=True)
 data.drop('Código DIVIPOLA municipio', axis = 1, inplace=True)
 data.drop('ID de caso', axis = 1, inplace=True)
 
-aux = data['Recuperado'].value_counts()
+aux = data['Ubicación del caso'].value_counts()
 
-data.loc[data['Estado'] == 'leve'] = 'Leve'
-data.loc[data['Estado'] == 'LEVE'] = 'Leve'
+data.loc[data['Estado'] == 'leve','Estado'] = 'Leve'
+data.loc[data['Estado'] == 'LEVE','Estado'] = 'Leve'
 
-data.loc[data['Ubicación del caso'] == 'casa'] = 'Casa'
-data.loc[data['Ubicación del caso'] == 'CASA'] = 'Casa'
+data.loc[data['Ubicación del caso'] == 'casa','Ubicación del caso'] = 'Casa'
+data.loc[data['Ubicación del caso'] == 'CASA','Ubicación del caso'] = 'Casa'
 
-data.loc[data['Sexo'] == 'm'] = 'M'
-data.loc[data['Sexo'] == 'f'] = 'F'
+data.loc[data['Sexo'] == 'm','Sexo'] = 'M'
+data.loc[data['Sexo'] == 'f','Sexo'] = 'F'
 
-data.loc[data['Edad'] == 'Casa'] = 36
-data.loc[data['Edad'] == 'Leve'] = 36
-data.loc[data['Edad'] == 'M'] = 36
-data.loc[data['Edad'] == 'F'] = 36
+data.loc[data['Edad'] == 'Casa','Edad'] = 36
+data.loc[data['Edad'] == 'Leve','Edad'] = 36
+data.loc[data['Edad'] == 'M','Edad'] = 36
+data.loc[data['Edad'] == 'F','Edad'] = 36
 
 
 data.mean()
@@ -69,11 +67,9 @@ data['Nombre departamento'].nunique()
 #Liste los departamentos afectados(sin repetirlos)
 data['Nombre departamento'].value_counts()
 
-data[data['Edad'] == '']
-
 
 #Ordene de mayor a menor por tipo de atención
-data.sort_values(by='Tipo de recuperación',ascending=False )
+data.sort_values(by='Ubicación del caso',ascending=False )
 
 #Liste de mayor a menor los 10 departamentos con mas casos de contagiados
 data['Nombre departamento'].value_counts().head(10)
@@ -160,8 +156,64 @@ data3 = pd.DataFrame({'tasa_mortalidad_ciu': tasa_mortalidad_ciu, 'tasa_recupera
 
 #Liste por cada ciudad la cantidad de personas por atención
 
-data.groupby(['Nombre municipio', 'Tipo de recuperación']).size()
+data.groupby(['Nombre municipio', 'Ubicación del caso']).size()
 
 #Liste el promedio de edad por sexo por cada ciudad de contagiados
 
 data.groupby(['Nombre municipio', 'Sexo'])['Edad'].mean()
+
+#Grafique las curvas de contagio, muerte y recuperación de toda Colombia acumulados
+data[(data['Recuperado'] == 'Recuperado')].groupby('Fecha de diagnóstico').size().plot()
+
+data[(data['Estado'] == 'Fallecido')].groupby('Fecha de diagnóstico').size().plot()
+
+#Grafique las curvas de contagio, muerte y recuperación de los 10 departamentos con mas casos de contagiados acumulados
+
+aux = data[(data['Estado'] == 'Fallecido')].groupby('Nombre departamento').size()
+
+aux.sort_values(ascending=False).head(10).plot()
+
+
+aux = data[(data['Recuperado'] == 'Recuperado')].groupby('Nombre departamento').size()
+
+aux.sort_values(ascending=False).head(10).plot()
+
+#Grafique las curvas de contagio, muerte y recuperación de las 10 ciudades con mas casos de contagiados acumulados
+
+aux = data[(data['Estado'] == 'Fallecido')].groupby('Nombre municipio').size()
+
+aux.sort_values(ascending=False).head(10).plot()
+
+
+aux = data[(data['Recuperado'] == 'Recuperado')].groupby('Nombre municipio').size()
+
+aux.sort_values(ascending=False).head(10).plot()
+
+#Liste de mayor a menor la cantidad de fallecidos por edad en toda Colombia.
+
+aux = data[(data['Estado'] == 'Fallecido')].groupby('Edad').size()
+
+aux.sort_values(ascending=False).head(10)
+
+#Liste el porcentaje de personas por atención de toda Colombia
+
+data.groupby('Ubicación del caso').mean()
+
+#Haga un gráfico de barras por atención de toda Colombia
+
+data.groupby('Ubicación del caso').size().plot(kind='bar')
+
+#Haga un gráfico de barras por Sexo de toda Colombia
+
+data.groupby('Sexo').size().plot(kind='bar')
+
+#Haga un gráfico de barras por tipo de toda Colombia
+
+data.groupby('Tipo de contagio').size().plot(kind='bar')
+
+#Haga un gráfico de barras del número de contagiados, recuperados y fallecidos por fecha de toda Colombia
+
+data[(data['Recuperado'] == 'Recuperado')].groupby('Fecha de diagnóstico').size().plot(kind='bar')
+
+data[(data['Estado'] == 'Fallecido')].groupby('Fecha de diagnóstico').size().plot(kind='bar')
+
